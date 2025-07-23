@@ -2,6 +2,7 @@ package com.daviaugusto.desafio_itau.infrastructure.services;
 
 import com.daviaugusto.desafio_itau.infrastructure.entities.Estatistica;
 import com.daviaugusto.desafio_itau.infrastructure.entities.Transacao;
+import com.daviaugusto.desafio_itau.infrastructure.exceptions.UnprocessableException;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -19,10 +20,10 @@ public class TransacaoService {
 
     public void gravarTransacao(Transacao transacao){
         if(transacao.getDataHora().isAfter(OffsetDateTime.now())){
-            throw new RuntimeException("A data está no futuro");
+            throw new UnprocessableException("A data está no futuro");
         }
         if(transacao.getValor()<0){
-            throw new RuntimeException("O valor passado é menor que zero");
+            throw new UnprocessableException("O valor passado é menor que zero");
         }
             listaTransacao.add(transacao);
     }
@@ -47,9 +48,15 @@ public class TransacaoService {
                 .mapToDouble(Double::doubleValue)
                 .summaryStatistics();
 
-        Estatistica estatistica = new Estatistica(stats.getCount(), stats.getSum(), stats.getAverage(), stats.getMin(), stats.getMax());
+        if(stats.getCount() == 0){
+            Estatistica estatisticaIf = new Estatistica(stats.getCount(), stats.getSum(), stats.getAverage(), 0.0, 0.0);
+            return estatisticaIf;
+        }
+        else {
+            Estatistica estatistica = new Estatistica(stats.getCount(), stats.getSum(), stats.getAverage(), stats.getMin(), stats.getMax());
 
-        return estatistica;
+            return estatistica;
+        }
     }
 
 
